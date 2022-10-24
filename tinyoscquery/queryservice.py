@@ -2,7 +2,21 @@ from zeroconf import ServiceInfo, Zeroconf
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import json, threading
 
+
 class OSCQueryService(object):
+    """
+    A class providing an OSCQuery service. Automatically sets up a oscjson http server and advertises the oscjson server and osc server on zeroconf.
+
+    Attributes
+    ----------
+    serverName : str
+        Name of your OSC Service
+    httpPort : int
+        Desired TCP port number for the oscjson HTTP server
+    oscPort : int
+        Desired UDP port number for the osc server
+    """
+    
     def __init__(self, serverName, httpPort, oscPort, oscIp="127.0.0.1") -> None:
         self.serverName = serverName
         self.httpPort = httpPort
