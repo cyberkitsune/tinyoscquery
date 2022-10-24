@@ -52,3 +52,4 @@ while True:
 - [x] Provide a basic oscjson server with a root node and HOST_INFO
 - [ ] Add a mechanism to advertise OSC nodes
 - [ ] Add a mechanism to update OSC nodes with new values
+- [ ] Add apis and tools to query other OSC services on the network
