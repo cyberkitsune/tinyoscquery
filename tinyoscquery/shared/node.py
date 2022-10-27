@@ -1,6 +1,7 @@
 from enum import IntEnum
 import json
 from json import JSONEncoder
+from re import L
 
 class OSCNodeEncoder(JSONEncoder):
     def default(self, o):
@@ -22,13 +23,21 @@ class OSCNodeEncoder(JSONEncoder):
                     obj_dict[k.upper()] = v
 
             # FIXME: I missed something, so here's a hack!
-            
+
             if "TYPE_" in obj_dict:
                 del obj_dict["TYPE_"]
             return obj_dict
 
         if isinstance(o, type):
             return Python_Type_List_to_OSC_Type([o])
+
+        if isinstance(o, OSCHostInfo):
+            obj_dict = {}
+            for k, v in vars(o).items():
+                if v is None:
+                    continue
+                obj_dict[k.upper()] = v
+            return obj_dict
         
         return json.JSONEncoder.default(self, o)
 
@@ -39,13 +48,14 @@ class OSCAccess(IntEnum):
     READWRITE_VALUE = 3
 
 class OSCQueryNode():
-    def __init__(self, full_path=None, contents=None, type_=None, access=None, description=None, value=None):
+    def __init__(self, full_path=None, contents=None, type_=None, access=None, description=None, value=None, host_info=None):
         self.contents = contents
         self.full_path = full_path
         self.access = access
         self.type_ = type_
         self.value = value
         self.description = description
+        self.host_info = host_info
 
 
     def find_subnode(self, full_path):
@@ -64,7 +74,19 @@ class OSCQueryNode():
     def __str__(self) -> str:
         return json.dumps(self, cls=OSCNodeEncoder)
 
+class OSCHostInfo():
+    def __init__(self, name, extensions, osc_ip=None, osc_port=None, osc_transport=None, ws_ip=None, ws_port=None) -> None:
+        self.name = name
+        self.osc_ip = osc_ip
+        self.osc_port = osc_port
+        self.osc_transport = osc_transport
+        self.ws_ip = ws_ip
+        self.ws_port = ws_port
+        self.extensions = extensions
 
+
+    def __str__(self) -> str:
+        return json.dumps(self, cls=OSCNodeEncoder)
 
 def OSC_Type_String_to_Python_Type(typestr):
     types = []
