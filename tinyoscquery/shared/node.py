@@ -1,6 +1,38 @@
-from enum import Enum
+from enum import IntEnum
+import json
+from json import JSONEncoder
 
-class OSCAccess(Enum):
+class OSCNodeEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, OSCQueryNode):
+            obj_dict = {}
+            for k, v in vars(o).items():
+                if v is None:
+                    continue
+                if k.lower() == "type_":
+                    obj_dict["TYPE"] = Python_Type_List_to_OSC_Type(v)
+                if k == "contents":
+                    obj_dict["CONTENTS"] = {}
+                    for subNode in v:
+                        if subNode.full_path is not None:
+                            obj_dict["CONTENTS"][subNode.full_path.split("/")[-1]] = subNode
+                        else:
+                            continue
+                else:
+                    obj_dict[k.upper()] = v
+
+            # FIXME: I missed something, so here's a hack!
+            
+            if "TYPE_" in obj_dict:
+                del obj_dict["TYPE_"]
+            return obj_dict
+
+        if isinstance(o, type):
+            return Python_Type_List_to_OSC_Type([o])
+        
+        return json.JSONEncoder.default(self, o)
+
+class OSCAccess(IntEnum):
     NO_VALUE = 0
     READONLY_VALUE = 1
     WRITEONLY_VALUE = 2
@@ -29,6 +61,11 @@ class OSCQueryNode():
         return foundNode
 
 
+    def __str__(self) -> str:
+        return json.dumps(self, cls=OSCNodeEncoder)
+
+
+
 def OSC_Type_String_to_Python_Type(typestr):
     types = []
     split = typestr.split()
@@ -44,3 +81,18 @@ def OSC_Type_String_to_Python_Type(typestr):
 
 
     return types
+
+
+def Python_Type_List_to_OSC_Type(types_):
+    output = []
+    for type_ in types_:
+        if isinstance(type_, int):
+            output.append("i")
+        elif isinstance(type_, float):
+            output.append("f")
+        elif isinstance(type_, bool):
+            output.append("T")
+        else:
+            output.append("s")
+
+    return " ".join(output)
