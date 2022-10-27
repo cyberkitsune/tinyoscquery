@@ -38,6 +38,14 @@ class OSCQueryBrowser(object):
     def get_discovered_json(self):
         return [oscjssvc[1] for oscjssvc in self.listener.oscjson_services.items()]
 
+    def find_service_by_name(self, name):
+        for svc in self.get_discovered_json():
+            client = OSCQueryClient(svc)
+            if name == client.get_host_info().name:
+                return svc
+
+        return None
+
 
 class OSCQueryClient(object):
     def __init__(self, service_info) -> None:
