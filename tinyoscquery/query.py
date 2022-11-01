@@ -2,7 +2,7 @@ import time
 from zeroconf import ServiceBrowser, ServiceInfo, ServiceListener, Zeroconf
 import requests
 
-from shared.node import OSCQueryNode, OSC_Type_String_to_Python_Type, OSCAccess, OSCHostInfo
+from .shared.node import OSCQueryNode, OSC_Type_String_to_Python_Type, OSCAccess, OSCHostInfo
 
 class OSCQueryListener(ServiceListener):
 
@@ -114,7 +114,6 @@ class OSCQueryClient(object):
         if "FULL_PATH" in json:
             newNode.full_path = json["FULL_PATH"]
 
-    
         if "TYPE" in json:
             newNode.type_ = OSC_Type_String_to_Python_Type(json["TYPE"])
 
@@ -125,7 +124,18 @@ class OSCQueryClient(object):
             newNode.access = OSCAccess(json["ACCESS"])
 
         if "VALUE" in json:
-            newNode.value = newNode.type_[0](json["VALUE"])
+            # FIXME don't give up with multiple types
+            if len(newNode.type_) > 1:
+                newNode.value = json["VALUE"]
+            else:
+                # FIXME Hack for bool
+                if newNode.type_[0] == bool:
+                    if json["VALUE"].lower() == "true":
+                        newNode.value = True
+                    else:
+                        newNode.value = False
+                else:
+                    newNode.value = newNode.type_[0](json["VALUE"])
 
 
         return newNode
@@ -146,6 +156,7 @@ if __name__ == "__main__":
         for svc in services:
             client = OSCQueryClient(svc)
             print(client.get_host_info())
+            print(client.query_node())
 
         break
 

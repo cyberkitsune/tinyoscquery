@@ -1,5 +1,6 @@
 from zeroconf import ServiceInfo, Zeroconf
 from http.server import SimpleHTTPRequestHandler, HTTPServer
+from .shared.node import OSCQueryNode, OSCHostInfo
 import json, threading
 
 
@@ -23,26 +24,19 @@ class OSCQueryService(object):
         self.oscPort = oscPort
         self.oscIp = oscIp
 
-        self.nodes = {}
-
-        def_exts = {"ACCESS": True, "CLIPMODE": False, "RANGE": True, "TYPE": True, "VALUE": True}
-
-        self.add_node(OSCHostInfoNode(self.serverName, def_exts, self.oscIp, self.oscPort, "UDP"))
-        self.add_node(OSCRootNode({}))
+        self.root_node = OSCQueryNode("/", description="root node")
+        self.host_info = OSCHostInfo(serverName, {"ACCESS":True,"CLIPMODE":False,"RANGE":True,"TYPE":True,"VALUE":True}, 
+            self.oscIp, self.oscPort, "UDP")
 
         self._zeroconf = Zeroconf()
         self._startOSCQueryService()
         self._advertiseOSCService()
-        self.http_server = OSCQueryHTTPServer(self.nodes, ('', self.httpPort), OSCQueryHTTPHandler)
+        self.http_server = OSCQueryHTTPServer(self.root_node, self.host_info, ('', self.httpPort), OSCQueryHTTPHandler)
         self.http_thread = threading.Thread(target=self._startHTTPServer)
         self.http_thread.start()
 
     def add_node(self, node):
-        path = node.get_path()
-        if path is None:
-            raise Exception("Tried to add node without a path!")
-
-        self.nodes[path] = node
+        self.root_node.add_child_node(node)
 
     def _startOSCQueryService(self):
         oscqsDesc = {'txtvers': 1}
@@ -50,13 +44,8 @@ class OSCQueryService(object):
         0, 0, oscqsDesc, "%s.oscjson.local." % self.serverName, addresses=["127.0.0.1"])
         self._zeroconf.register_service(oscqsInfo)
 
-
     def _startHTTPServer(self):
         self.http_server.serve_forever()
-
-
-    def _handleRoot(self):
-        pass
 
     def _advertiseOSCService(self):
         oscDesc = {'txtvers': 1}
@@ -66,76 +55,28 @@ class OSCQueryService(object):
         self._zeroconf.register_service(oscInfo)
 
 class OSCQueryHTTPServer(HTTPServer):
-    def __init__(self, nodes, server_address: tuple[str, int], RequestHandlerClass, bind_and_activate: bool = ...) -> None:
+    def __init__(self, root_node, host_info, server_address: tuple[str, int], RequestHandlerClass, bind_and_activate: bool = ...) -> None:
         super().__init__(server_address, RequestHandlerClass, bind_and_activate)
-        self.nodes = nodes
+        self.root_node = root_node
+        self.host_info = host_info
 
 class OSCQueryHTTPHandler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
-        if self.path in self.server.nodes:
+        if 'HOST_INFO' in self.path:
             self.send_response(200)
             self.send_header("Content-type", "text/json")
             self.end_headers()
-            self.wfile.write(bytes(str(self.server.nodes[self.path]), 'utf-8'))
-        else:
+            self.wfile.write(bytes(str(self.server.host_info), 'utf-8'))
+            return
+        node = self.server.root_node.find_subnode(self.path)
+        if node is None:
             self.send_response(404)
-            self.send_header("Content-type", "text/html")
+            self.send_header("Content-type", "text/json")
             self.end_headers()
             self.wfile.write(bytes("OSC Path not found", 'utf-8'))
-
-
-
-class OSCQueryNode(object):
-    def __init__(self, access=None, description=None) -> None:
-        if description is not None:
-            self.description = description
-        if access is not None:
-            self.access = access
-
-
-    def __str__(self) -> str:
-        return json.dumps(dict((k.upper(), v) for k, v in vars(self).items()))
-
-
-    def get_path(self):
-        return None
-
-
-class OSCRootNode(OSCQueryNode):
-    def __init__(self, contents) -> None:
-        super().__init__("root node", 0)
-        self.contents = contents
-
-    
-    def get_path(self):
-        return "/"
-
-
-class OSCPathNode(OSCQueryNode):
-    def __init__(self, full_path, access, description=None, type=None, value=None, contents=None) -> None:
-        super().__init__(description, access)
-        self.full_path = full_path
-        if type is not None:
-            self.type = type
-        
-        if value is not None:
-            self.value = value
-
-        if contents is not None:
-            self.contents = contents
-
-
-    def get_path(self):
-        return self.full_path
-
-
-class OSCHostInfoNode(OSCQueryNode):
-    def __init__(self, name, extensions, osc_ip, osc_port, osc_transport) -> None:
-        self.name = name
-        self.extensions = extensions
-        self.osc_ip = osc_ip
-        self.osc_port = osc_port
-        self.osc_transport = osc_transport
-
-    def get_path(self):
-        return "/HOST_INFO"
+        else:
+            self.send_response(200)
+            self.send_header("Content-type", "text/json")
+            self.end_headers()
+            self.wfile.write(bytes(str(node), 'utf-8'))
+            
