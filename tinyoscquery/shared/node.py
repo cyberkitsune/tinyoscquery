@@ -62,6 +62,9 @@ class OSCQueryNode():
             return self
 
         foundNode = None
+        if self.contents is None:
+            return None
+        
         for subNode in self.contents:
             foundNode = subNode.find_subnode(full_path)
             if foundNode is not None:
@@ -69,6 +72,29 @@ class OSCQueryNode():
 
         return foundNode
 
+    def add_child_node(self, child):
+        if child == self:
+            return
+
+        path_split = child.full_path.rsplit("/",1)
+        if len(path_split) < 2:
+            raise Exception("Tried to add child node with invalid full path!")
+
+        parent_path = path_split[0]
+
+        if parent_path == '':
+            parent_path = "/"
+
+        parent = self.find_subnode(parent_path)
+
+        if parent is None:
+            parent = OSCQueryNode(parent_path)
+            self.add_child_node(parent)
+            
+        
+        if parent.contents is None:
+            parent.contents = []
+        parent.contents.append(child)    
 
     def __str__(self) -> str:
         return json.dumps(self, cls=OSCNodeEncoder)
@@ -89,16 +115,20 @@ class OSCHostInfo():
 
 def OSC_Type_String_to_Python_Type(typestr):
     types = []
-    split = typestr.split()
-    for typevalue in split:
+    for typevalue in typestr:
+        if typevalue == '':
+            continue
+
         if typevalue == "i":
             types.append(int)
         elif typevalue == "f" or typevalue == "h" or typevalue == "d" or typevalue == "t":
             types.append(float)
         elif typevalue == "T" or typevalue == "F":
             types.append(bool)
-        else:
+        elif typevalue == "s":
             types.append(str)
+        else:
+            raise Exception(f"Unknown OSC type when converting! {typevalue} -> ???")
 
 
     return types
@@ -107,13 +137,25 @@ def OSC_Type_String_to_Python_Type(typestr):
 def Python_Type_List_to_OSC_Type(types_):
     output = []
     for type_ in types_:
-        if isinstance(type_, int):
+        if type_ == int:
             output.append("i")
-        elif isinstance(type_, float):
+        elif type_ == float:
             output.append("f")
-        elif isinstance(type_, bool):
+        elif type_ == bool:
             output.append("T")
-        else:
+        elif type_ == str:
             output.append("s")
+        else:
+            raise Exception(f"Cannot convert {type_} to OSC type!")
 
     return " ".join(output)
+
+
+if __name__ == "__main__":
+    root = OSCQueryNode("/", description="root node")
+    root.add_child_node(OSCQueryNode("/your/mom/cool"))
+    root.add_child_node(OSCQueryNode("/your/mom/awesome"))
+    root.add_child_node(OSCQueryNode("/my/mom/cool"))
+    root.add_child_node(OSCQueryNode("/my/mom/cool"))
+
+    print(root)
