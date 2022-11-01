@@ -1,7 +1,6 @@
 from enum import IntEnum
 import json
 from json import JSONEncoder
-from re import L
 
 class OSCNodeEncoder(JSONEncoder):
     def default(self, o):
