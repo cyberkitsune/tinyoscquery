@@ -35,11 +35,11 @@ class OSCQueryBrowser(object):
     def get_discovered_osc(self):
         return [oscsvc[1] for oscsvc in self.listener.osc_services.items()]
 
-    def get_discovered_json(self):
+    def get_discovered_oscquery(self):
         return [oscjssvc[1] for oscjssvc in self.listener.oscjson_services.items()]
 
     def find_service_by_name(self, name):
-        for svc in self.get_discovered_json():
+        for svc in self.get_discovered_oscquery():
             client = OSCQueryClient(svc)
             if name == client.get_host_info().name:
                 return svc
@@ -144,21 +144,19 @@ class OSCQueryClient(object):
 
 
 if __name__ == "__main__":
-    oscqb = OSCQueryBrowser()
+    browser = OSCQueryBrowser()
+    time.sleep(2) # Wait for discovery
 
-    while True:
-        services = oscqb.get_discovered_json()
-        if len(services) == 0:
-            print("No services yet...")
-            time.sleep(2)
-            continue
+    for service_info in browser.get_discovered_oscquery():
+        client = OSCQueryClient(service_info)
 
-        for svc in services:
-            client = OSCQueryClient(svc)
-            print(client.get_host_info())
-            print(client.query_node())
+        # Find host info
+        host_info = client.get_host_info()
+        print(f"Found OSC Host: {host_info.name} with ip {host_info.osc_ip}:{host_info.osc_port}")
 
-        break
+        # Query a node and print its value
+        node = client.query_node("/test/node")
+        print(f"Node is a {node.type_} with value {node.value}")
 
         
         
