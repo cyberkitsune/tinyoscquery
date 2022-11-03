@@ -8,6 +8,7 @@ A very simple, work in progress, OSCQuery library for python.
 2. Run `pip install ./` in this repo folder
 
 ## Usage
+### Advertising an OSCQuery Service
 To register a OSCQuery Service, simply construct a `OSCQueryService` (in `tinyoscquery.queryservice`) object with a name, and desired port numbers. The HTTP oscjson server and zeroconf advertisements will automataically start.
 
 ```Python
@@ -46,10 +47,35 @@ while True:
     time.sleep(1)
 
 ```
+### Discovering and Querying other OSCQuery Services
+To find other OSCQuery Services and read host info, utilize the `tinyoscquery.query` package to make a `OSCQueryBrowser` instance, wait for discovery, and then use `OSCQueryClient` to evaluate the HOST_INFO.
+```python
+import time
+
+from tinyoscquery.query import OSCQueryBrowser, OSCQueryClient
+
+browser = OSCQueryBrowser()
+time.sleep(2) # Wait for discovery
+
+for service_info in browser.get_discovered_oscquery():
+    client = OSCQueryClient(service_info)
+
+    # Find host info
+    host_info = client.get_host_info()
+    print(f"Found OSC Host: {host_info.name} with ip {host_info.osc_ip}:{host_info.osc_port}")
+
+    # Query a node and print it's value
+    node = client.query_node("/test/node")
+    print(f"Node is a {node.type_} with value {node.value}")
+```
+
+
 
 ## Project To-Do
 - [x] Advertise osc and oscjson on zeroconfig
 - [x] Provide a basic oscjson server with a root node and HOST_INFO
-- [ ] Add a mechanism to advertise OSC nodes
+- [X] Add a mechanism to advertise OSC nodes
 - [ ] Add a mechanism to update OSC nodes with new values
-- [ ] Add apis and tools to query other OSC services on the network
+- [X] Add apis and tools to query other OSC services on the network
+- [ ] Add more documentation
+- [ ] Finalize API design
