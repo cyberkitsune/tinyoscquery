@@ -38,6 +38,14 @@ class OSCQueryService(object):
     def add_node(self, node):
         self.root_node.add_child_node(node)
 
+    def advertise_endpoint(self, address, value=None):
+        new_node = OSCQueryNode(full_path=address)
+        if value is not None:
+            new_node.value = value
+            # FIXME: Multitype values are not handled correctly here :c
+            new_node.type_ = [type(value)]
+        self.add_node(new_node)
+
     def _startOSCQueryService(self):
         oscqsDesc = {'txtvers': 1}
         oscqsInfo = ServiceInfo("_oscjson._tcp.local.", "%s._oscjson._tcp.local." % self.serverName, self.httpPort, 
