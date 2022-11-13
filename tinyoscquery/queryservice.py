@@ -68,6 +68,7 @@ class OSCQueryHTTPServer(HTTPServer):
         self.root_node = root_node
         self.host_info = host_info
 
+
 class OSCQueryHTTPHandler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         if 'HOST_INFO' in self.path:
@@ -87,4 +88,7 @@ class OSCQueryHTTPHandler(SimpleHTTPRequestHandler):
             self.send_header("Content-type", "text/json")
             self.end_headers()
             self.wfile.write(bytes(str(node), 'utf-8'))
+
+    def log_message(self, format, *args):
+        pass
             
