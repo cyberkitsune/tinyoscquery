@@ -129,13 +129,14 @@ class OSCQueryClient(object):
                 newNode.value = json["VALUE"]
             else:
                 # FIXME Hack for bool
-                if newNode.type_[0] == bool:
-                    if json["VALUE"].lower() == "true":
-                        newNode.value = True
-                    else:
-                        newNode.value = False
-                else:
-                    newNode.value = newNode.type_[0](json["VALUE"])
+                # Update... why did I do this again? json bool should be type compliant...
+                #if newNode.type_[0] == bool:
+                #    if json["VALUE"].lower() == "true":
+                #        newNode.value = True
+                #    else:
+                #        newNode.value = False
+                #else:
+                newNode.value = newNode.type_[0](json["VALUE"])
 
 
         return newNode
