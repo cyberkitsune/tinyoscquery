@@ -57,6 +57,8 @@ class OSCQueryBrowser(object):
         for svc in self.get_discovered_oscquery():
             client = OSCQueryClient(svc)
             hi = client.get_host_info()
+            if hi is None:
+                continue
             node = client.query_node(address)
             if node is not None:
                 svcs.append((svc, hi, node))
@@ -109,7 +111,8 @@ class OSCQueryClient(object):
         try:
             r = requests.get(url)
         except Exception as ex:
-            print("Error querying HOST_INFO...", ex)
+            #print("Error querying HOST_INFO...", ex)
+            pass
         if r is None:
             return None
 

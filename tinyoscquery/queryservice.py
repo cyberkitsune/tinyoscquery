@@ -55,6 +55,7 @@ class OSCQueryService(object):
         0, 0, oscqsDesc, "%s.oscjson.local." % self.serverName, addresses=["127.0.0.1"])
         self._zeroconf.register_service(oscqsInfo)
 
+
     def _startHTTPServer(self):
         self.http_server.serve_forever()
 
@@ -64,6 +65,7 @@ class OSCQueryService(object):
         0, 0, oscDesc, "%s.osc.local." % self.serverName, addresses=["127.0.0.1"])
 
         self._zeroconf.register_service(oscInfo)
+
 
 class OSCQueryHTTPServer(HTTPServer):
     def __init__(self, root_node, host_info, server_address: tuple[str, int], RequestHandlerClass, bind_and_activate: bool = ...) -> None:
