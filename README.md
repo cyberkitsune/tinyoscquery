@@ -48,6 +48,7 @@ while True:
 
 ```
 ### Discovering and Querying other OSCQuery Services
+
 To find other OSCQuery Services and read host info, utilize the `tinyoscquery.query` package to make a `OSCQueryBrowser` instance, wait for discovery, and then use `OSCQueryClient` to evaluate the HOST_INFO.
 ```python
 import time
@@ -64,7 +65,7 @@ for service_info in browser.get_discovered_oscquery():
     host_info = client.get_host_info()
     print(f"Found OSC Host: {host_info.name} with ip {host_info.osc_ip}:{host_info.osc_port}")
 
-    # Query a node and print it's value
+    # Query a node and print its value
     node = client.query_node("/test/node")
     print(f"Node is a {node.type_} with value {node.value}")
 ```
