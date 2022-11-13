@@ -35,6 +35,9 @@ class OSCQueryService(object):
         self.http_thread = threading.Thread(target=self._startHTTPServer)
         self.http_thread.start()
 
+    def __del__(self):
+        self._zeroconf.unregister_all_services()
+
     def add_node(self, node):
         self.root_node.add_child_node(node)
 

@@ -25,6 +25,12 @@ class OSCQueryListener(ServiceListener):
         elif type_ == '_oscjson._tcp.local.':
             self.oscjson_services[name] = zc.get_service_info(type_, name)
 
+    def update_service(self, zc: 'Zeroconf', type_: str, name: str) -> None:
+        if type_ == '_osc._udp.local.':
+            self.osc_services[name] = zc.get_service_info(type_, name)
+        elif type_ == '_oscjson._tcp.local.':
+            self.oscjson_services[name] = zc.get_service_info(type_, name)
+
 
 class OSCQueryBrowser(object):
     def __init__(self) -> None:
