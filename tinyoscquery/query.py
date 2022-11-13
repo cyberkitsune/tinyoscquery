@@ -46,6 +46,17 @@ class OSCQueryBrowser(object):
 
         return None
 
+    def find_nodes_by_endpoint_address(self, address) -> list[tuple[ServiceInfo, OSCHostInfo, OSCQueryNode]]:
+        svcs = []
+        for svc in self.get_discovered_oscquery():
+            client = OSCQueryClient(svc)
+            hi = client.get_host_info()
+            node = client.query_node(address)
+            if node is not None:
+                svcs.append((svc, hi, node))
+
+        return svcs
+
 
 class OSCQueryClient(object):
     def __init__(self, service_info) -> None:
