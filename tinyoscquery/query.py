@@ -78,7 +78,17 @@ class OSCQueryClient(object):
 
     def query_node(self, node="/"):
         url = self._get_query_root() + node
-        r = requests.get(url)
+        r = None
+        try:
+            r = requests.get(url)
+        except Exception as ex:
+            print("Error querying node...", ex)
+        if r is None:
+            return None
+
+        if r.status_code == 404:
+            return None
+        
         if r.status_code != 200:
             raise Exception("Node query error: (HTTP", r.status_code, ") ", r.content)
 
@@ -89,7 +99,14 @@ class OSCQueryClient(object):
 
     def get_host_info(self):
         url = self._get_query_root() + "/HOST_INFO"
-        r = requests.get(url)
+        r = None
+        try:
+            r = requests.get(url)
+        except Exception as ex:
+            print("Error querying HOST_INFO...", ex)
+        if r is None:
+            return None
+
         if r.status_code != 200:
             raise Exception("Node query error: (HTTP", r.status_code, ") ", r.content)
 
