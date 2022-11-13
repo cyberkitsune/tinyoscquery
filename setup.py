@@ -5,6 +5,6 @@ setup(
     version='0.0.1',
     description="Quick and dirty python implementation for OSCQuery",
     author="CyberKitsune",
-    packages=['tinyoscquery'],
+    packages=['tinyoscquery', 'tinyoscquery.shared'],
     install_requires=['zeroconf', 'requests']
 )
