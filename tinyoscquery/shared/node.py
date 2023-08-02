@@ -94,7 +94,14 @@ class OSCQueryNode():
         
         if parent.contents is None:
             parent.contents = []
-        parent.contents.append(child)    
+        parent.contents.append(child)
+
+
+    def __iter__(self):
+            yield self
+            if self.contents is not None:
+                for subNode in self.contents:
+                    yield from subNode
 
     def __str__(self) -> str:
         return json.dumps(self, cls=OSCNodeEncoder)
@@ -153,9 +160,12 @@ def Python_Type_List_to_OSC_Type(types_):
 
 if __name__ == "__main__":
     root = OSCQueryNode("/", description="root node")
-    root.add_child_node(OSCQueryNode("/your/mom/cool"))
-    root.add_child_node(OSCQueryNode("/your/mom/awesome"))
-    root.add_child_node(OSCQueryNode("/my/mom/cool"))
-    root.add_child_node(OSCQueryNode("/my/mom/cool"))
+    root.add_child_node(OSCQueryNode("/test/node/one"))
+    root.add_child_node(OSCQueryNode("/test/node/two"))
+    root.add_child_node(OSCQueryNode("/test/othernode/one"))
+    root.add_child_node(OSCQueryNode("/test/othernode/three"))
 
-    print(root)
+    #print(root)
+
+    for child in root:
+        print(child)
