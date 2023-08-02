@@ -80,7 +80,7 @@ class OSCQueryHTTPHandler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/json")
             self.end_headers()
-            self.wfile.write(bytes(str(self.server.host_info), 'utf-8'))
+            self.wfile.write(bytes(str(self.server.host_info.to_json()), 'utf-8'))
             return
         node = self.server.root_node.find_subnode(self.path)
         if node is None:
@@ -92,7 +92,7 @@ class OSCQueryHTTPHandler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/json")
             self.end_headers()
-            self.wfile.write(bytes(str(node), 'utf-8'))
+            self.wfile.write(bytes(str(node.to_json()), 'utf-8'))
 
     def log_message(self, format, *args):
         pass

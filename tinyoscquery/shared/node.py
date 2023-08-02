@@ -96,6 +96,10 @@ class OSCQueryNode():
             parent.contents = []
         parent.contents.append(child)
 
+    
+    def to_json(self):
+        return json.dumps(self, cls=OSCNodeEncoder)
+
 
     def __iter__(self):
             yield self
@@ -104,7 +108,7 @@ class OSCQueryNode():
                     yield from subNode
 
     def __str__(self) -> str:
-        return json.dumps(self, cls=OSCNodeEncoder)
+        return f'<OSCQueryNode {self.full_path} {self.description} {self.type_}>'
 
 class OSCHostInfo():
     def __init__(self, name, extensions, osc_ip=None, osc_port=None, osc_transport=None, ws_ip=None, ws_port=None) -> None:
@@ -116,6 +120,8 @@ class OSCHostInfo():
         self.ws_port = ws_port
         self.extensions = extensions
 
+    def to_json(self) -> str:
+        return json.dumps(self, cls=OSCNodeEncoder)
 
     def __str__(self) -> str:
         return json.dumps(self, cls=OSCNodeEncoder)
