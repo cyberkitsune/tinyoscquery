@@ -167,7 +167,13 @@ class OSCQueryClient(object):
                 raise Exception("OSCQuery JSON Value is not List / Array? Out-of-spec?")
             
             for idx, v in enumerate(json["VALUE"]):
-                newNode.value.append(newNode.type_[idx](v))
+                # According to the spec, if there is not yet a value, the return will be an empty JSON object
+                if isinstance(v, dict) and not v:
+                    # FIXME does this apply to all values in the value array always...? I assume it does here
+                    newNode.value = []
+                    break
+                else:
+                    newNode.value.append(newNode.type_[idx](v))
 
 
         return newNode
