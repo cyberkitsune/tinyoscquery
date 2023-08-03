@@ -1,6 +1,6 @@
 from zeroconf import ServiceInfo, Zeroconf
 from http.server import SimpleHTTPRequestHandler, HTTPServer
-from .shared.node import OSCQueryNode, OSCHostInfo
+from .shared.node import OSCQueryNode, OSCHostInfo, OSCAccess
 import json, threading
 
 
@@ -41,8 +41,8 @@ class OSCQueryService(object):
     def add_node(self, node):
         self.root_node.add_child_node(node)
 
-    def advertise_endpoint(self, address, value=None):
-        new_node = OSCQueryNode(full_path=address)
+    def advertise_endpoint(self, address, value=None, access=OSCAccess.READWRITE_VALUE):
+        new_node = OSCQueryNode(full_path=address, access=access)
         if value is not None:
             new_node.value = value
             # FIXME: Multitype values are not handled correctly here :c
