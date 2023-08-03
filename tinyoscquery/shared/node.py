@@ -52,6 +52,7 @@ class OSCQueryNode():
         self.full_path = full_path
         self.access = access
         self.type_ = type_
+        # Value is always an array!
         self.value = value
         self.description = description
         self.host_info = host_info
@@ -108,7 +109,7 @@ class OSCQueryNode():
                     yield from subNode
 
     def __str__(self) -> str:
-        return f'<OSCQueryNode {self.full_path} {self.description} {self.type_}>'
+        return f'<OSCQueryNode @ {self.full_path} (D: "{self.description}" T:{self.type_} V:{self.value})>'
 
 class OSCHostInfo():
     def __init__(self, name, extensions, osc_ip=None, osc_port=None, osc_transport=None, ws_ip=None, ws_port=None) -> None:
