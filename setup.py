@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="tinyoscquery",
-    version='0.1.1',
+    version='0.1.2',
     description="Quick and dirty python implementation for OSCQuery",
     author="CyberKitsune",
     packages=['tinyoscquery', 'tinyoscquery.shared'],
