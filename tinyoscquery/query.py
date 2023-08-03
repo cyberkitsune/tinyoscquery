@@ -47,7 +47,7 @@ class OSCQueryBrowser(object):
     def find_service_by_name(self, name):
         for svc in self.get_discovered_oscquery():
             client = OSCQueryClient(svc)
-            if name == client.get_host_info().name:
+            if name in client.get_host_info().name:
                 return svc
 
         return None
@@ -161,19 +161,13 @@ class OSCQueryClient(object):
             newNode.access = OSCAccess(json["ACCESS"])
 
         if "VALUE" in json:
-            # FIXME don't give up with multiple types
-            if len(newNode.type_) > 1:
-                newNode.value = json["VALUE"]
-            else:
-                # FIXME Hack for bool
-                # Update... why did I do this again? json bool should be type compliant...
-                #if newNode.type_[0] == bool:
-                #    if json["VALUE"].lower() == "true":
-                #        newNode.value = True
-                #    else:
-                #        newNode.value = False
-                #else:
-                newNode.value = newNode.type_[0](json["VALUE"])
+            newNode.value = []
+            # This should always be an array... throw an exception here?
+            if not isinstance(json['VALUE'], list):
+                raise Exception("OSCQuery JSON Value is not List / Array? Out-of-spec?")
+            
+            for idx, v in enumerate(json["VALUE"]):
+                newNode.value.append(newNode.type_[idx](v))
 
 
         return newNode
