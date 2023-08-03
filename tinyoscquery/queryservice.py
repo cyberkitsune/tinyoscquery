@@ -44,9 +44,12 @@ class OSCQueryService(object):
     def advertise_endpoint(self, address, value=None, access=OSCAccess.READWRITE_VALUE):
         new_node = OSCQueryNode(full_path=address, access=access)
         if value is not None:
-            new_node.value = value
-            # FIXME: Multitype values are not handled correctly here :c
-            new_node.type_ = [type(value)]
+            if not isinstance(value, list):
+                new_node.value = [value]
+                new_node.type_ = [type(value)]
+            else:
+                new_node.value = value
+                new_node.type_ = [type(v) for v in value]
         self.add_node(new_node)
 
     def _startOSCQueryService(self):
