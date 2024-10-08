@@ -47,7 +47,10 @@ class OSCQueryBrowser(object):
     def find_service_by_name(self, name):
         for svc in self.get_discovered_oscquery():
             client = OSCQueryClient(svc)
-            if name in client.get_host_info().name:
+            host_info = client.get_host_info()
+            if host_info is None:
+                continue
+            if name in host_info.name:
                 return svc
 
         return None
