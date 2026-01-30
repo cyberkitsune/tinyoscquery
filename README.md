@@ -1,7 +1,10 @@
 # tinyoscquery
-A very simple, work in progress, OSCQuery library for python.
 
-**THIS IS VERY MUCH A WORK IN PROGRESS** Very little of OSCQuery is actually implemented right now, just the bare minimum to advertise that a server exists.
+A very simple, work-in-progress OSCQuery library for Python.
+
+**Built on the original [cyberkitsune/tinyoscquery](https://github.com/cyberkitsune/tinyoscquery).** This fork adds same-port HTTP+WebSocket (per the [OSCQuery proposal](https://github.com/Vidvox/OSCQueryProposal)), LISTEN/IGNORE support, and binary OSC streaming for live value updates.
+
+**THIS IS VERY MUCH A WORK IN PROGRESS** — only a subset of OSCQuery is implemented (advertising, HTTP oscjson, optional WebSocket streaming).
 
 ## Installation
 1. Clone this repo
@@ -72,11 +75,37 @@ for service_info in browser.get_discovered_oscquery():
 
 
 
+## Updating node values
+
+After advertising endpoints, you can update their values so that HTTP GET requests return the latest value:
+
+```python
+from tinyoscquery.queryservice import OSCQueryService
+
+oscqs = OSCQueryService("Test-Service", 9020, 9020)
+oscqs.advertise_endpoint("/control/knob1", 0)
+oscqs.advertise_endpoint("/control/knob2", 0)
+
+# Update by path (value is visible on next HTTP query)
+oscqs.update_value("/control/knob1", 255)
+oscqs.update_value("/control/knob2", 128)
+
+# Or get the node and mutate (same effect for HTTP)
+node = oscqs.get_node("/control/knob1")
+if node is not None:
+    node.value[0] = 100
+```
+
+- **`get_node(path)`** — Returns the `OSCQueryNode` at `path`, or `None`. You can then set `node.value[0] = x` (or `node.value = [x]`).
+- **`update_value(path, value)`** — Finds the node at `path`, sets its value (single value or list). Returns `True` if the node was found and updated.
+- **WebSocket (live value updates)** — If `aiohttp` is installed, HTTP and WebSocket run on the **same port** (OSCQuery spec). HOST_INFO includes `ws_ip` and `ws_port` (same as HTTP). Clients connect to `ws://host:httpPort/`, send `{"COMMAND": "LISTEN", "DATA": "/path"}` to subscribe, and receive **binary OSC** packets when `update_value(path, value)` is called. If `aiohttp` is not installed but `websockets` is, a separate WebSocket server runs on `wsPort` (default `httpPort + 1`) and pushes JSON `{"path": path, "VALUE": value}` to all connected clients.
+- **`set_push_target(host, port)`** — When set, each `update_value(path, value)` also sends an OSC message to `host:port`. Requires `pip install python-osc`. Pass `None, None` to disable.
+
 ## Project To-Do
 - [x] Advertise osc and oscjson on zeroconfig
 - [x] Provide a basic oscjson server with a root node and HOST_INFO
 - [X] Add a mechanism to advertise OSC nodes
-- [ ] Add a mechanism to update OSC nodes with new values
+- [x] Add a mechanism to update OSC nodes with new values
 - [X] Add apis and tools to query other OSC services on the network
 - [ ] Add more documentation
 - [ ] Finalize API design

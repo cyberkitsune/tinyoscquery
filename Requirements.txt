@@ -1,2 +1,8 @@
 zeroconf==0.39.1
 requests
+# Optional: for set_push_target (OSC) and WebSocket binary OSC. No-op if not installed.
+python-osc
+# Optional: combined HTTP+WebSocket on same port (OSCQuery spec). Falls back to separate WS port if not installed.
+aiohttp
+# Optional: WebSocket on separate port when aiohttp not used. No-op if not installed.
+websockets
